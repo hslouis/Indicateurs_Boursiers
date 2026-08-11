@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
+
+  --color-background: oklch(0.16 0.012 250);
+  --color-foreground: oklch(0.94 0.005 250);
+
+  --color-card: oklch(0.2 0.014 250);
+  --color-card-foreground: oklch(0.94 0.005 250);
+
+  --color-muted: oklch(0.27 0.016 250);
+  --color-muted-foreground: oklch(0.66 0.012 250);
+
+  --color-border: oklch(0.3 0.016 250);
+
+  --color-primary: oklch(0.78 0.13 195);
+  --color-primary-foreground: oklch(0.16 0.012 250);
+
+  --color-bull: oklch(0.72 0.17 155);
+  --color-bull-foreground: oklch(0.16 0.012 250);
+
+  --color-bear: oklch(0.65 0.2 22);
+  --color-bear-foreground: oklch(0.98 0.005 250);
+
+  --color-neutral: oklch(0.8 0.14 85);
+  --color-neutral-foreground: oklch(0.16 0.012 250);
+
+  --color-warn: oklch(0.74 0.16 55);
+  --color-warn-foreground: oklch(0.16 0.012 250);
+
+  --radius: 0.5rem;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+html {
+  background-color: var(--color-background);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
