@@ -1,9 +1,6 @@
 import { analyze, type Analysis } from './indicators'
 
-export interface SparkPoint {
-  t: number
-  c: number
-}
+export interface SparkPoint { t: number; c: number }
 
 export interface Quote {
   symbol: string
@@ -20,60 +17,58 @@ export interface Quote {
   spark: SparkPoint[]
   analysis: Analysis | null
   error?: string
+  favorite?: boolean
+  holding?: boolean
 }
 
-// Indices de référence
-export const INDICES: { symbol: string; name: string }[] = [
+export const INDICES = [
   { symbol: '^GSPC', name: 'S&P 500' },
   { symbol: '^NDX', name: 'Nasdaq-100' },
   { symbol: '^GSPTSE', name: 'S&P/TSX Composite' },
 ]
 
-// Actions favorites : portefeuille actuel + titres déjà suivis pour les occasions d'achat.
-// Les CDR canadiens sont suivis via leur cotation TSX (.TO) afin d'avoir les prix en CAD.
-export const STOCKS: { symbol: string; name: string }[] = [
-  { symbol: 'MSFT.TO', name: 'Microsoft CDR (CAD Hedged)' },
-  { symbol: 'AAPL.TO', name: 'Apple CDR (CAD Hedged)' },
-  { symbol: 'AMZN.TO', name: 'Amazon CDR (CAD Hedged)' },
-  { symbol: 'GOOG.TO', name: 'Alphabet CDR (CAD Hedged)' },
-  { symbol: 'MA.TO', name: 'Mastercard CDR (CAD Hedged)' },
-  { symbol: 'SBUX.TO', name: 'Starbucks CDR (CAD Hedged)' },
-  { symbol: 'SPGI.TO', name: 'S&P Global CDR (CAD Hedged)' },
-  { symbol: 'META', name: 'Meta Platforms' },
-  { symbol: 'TD.TO', name: 'TD Bank' },
-  { symbol: 'BNS.TO', name: 'Bank of Nova Scotia' },
-  { symbol: 'CM.TO', name: 'CIBC' },
-  { symbol: 'BN.TO', name: 'Brookfield' },
-  { symbol: 'MDA.TO', name: 'MDA Space' },
-  { symbol: 'NOWS.TO', name: 'NOWS' },
-  { symbol: 'SHOP.TO', name: 'Shopify' },
+// Actions favorites : portefeuille actuel + titres suivis pour les occasions d'achat.
+// Les CDR canadiens qui ont une cotation TSX sont suivis en .TO afin d'analyser le prix CAD.
+export const STOCKS = [
+  { symbol: 'MSFT.TO', displaySymbol: 'MSFT', name: 'Microsoft CDR', holding: true },
+  { symbol: 'AAPL.TO', displaySymbol: 'AAPL', name: 'Apple CDR', holding: true },
+  { symbol: 'AMZN.TO', displaySymbol: 'AMZN', name: 'Amazon CDR', holding: true },
+  { symbol: 'GOOG.TO', displaySymbol: 'GOOG', name: 'Alphabet CDR', holding: true },
+  { symbol: 'MA.TO', displaySymbol: 'MA', name: 'Mastercard CDR', holding: true },
+  { symbol: 'META', displaySymbol: 'META', name: 'Meta Platforms', holding: true },
+  { symbol: 'SBUX.TO', displaySymbol: 'SBUX', name: 'Starbucks CDR', holding: true },
+  { symbol: 'SPGI.TO', displaySymbol: 'SPGI', name: 'S&P Global CDR', holding: true },
+  { symbol: 'TD.TO', displaySymbol: 'TD', name: 'TD', holding: true },
+  { symbol: 'BNS.TO', displaySymbol: 'BNS', name: 'Banque Scotia', holding: true },
+  { symbol: 'CM.TO', displaySymbol: 'CM', name: 'CIBC', holding: true },
+  { symbol: 'BN.TO', displaySymbol: 'BN', name: 'Brookfield', holding: true },
+  { symbol: 'MDA.TO', displaySymbol: 'MDA', name: 'MDA Space', holding: false },
+  { symbol: 'NOWS.TO', displaySymbol: 'NOWS', name: 'NOWS', holding: false },
+  { symbol: 'SHOP.TO', displaySymbol: 'SHOP', name: 'Shopify', holding: false },
+  { symbol: 'DSG.TO', displaySymbol: 'DSG', name: 'Descartes Systems Group', holding: false },
+  { symbol: 'CSU.TO', displaySymbol: 'CSU', name: 'Constellation Software', holding: false },
+  { symbol: 'NVDA.TO', displaySymbol: 'NVDA', name: 'NVIDIA CDR', holding: false },
+  { symbol: 'ASML', displaySymbol: 'ASML', name: 'ASML', holding: false },
 ]
 
-// FNB détenus / suivis dans le portefeuille.
-export const ETFS: { symbol: string; name: string }[] = [
-  { symbol: 'XEQT.TO', name: 'XEQT — iShares Core Equity ETF Portfolio' },
-  { symbol: 'VFV.TO', name: 'VFV — Vanguard S&P 500 Index ETF' },
-  { symbol: 'VXC.TO', name: 'VXC — Vanguard FTSE Global All Cap ex Canada' },
-  { symbol: 'FINN.TO', name: 'FINN — Fidelity Global Innovators ETF' },
-  { symbol: 'MSHE.TO', name: 'MSHE — Harvest Microsoft Enhanced High Income' },
+export const ETFS = [
+  { symbol: 'XEQT.TO', displaySymbol: 'XEQT', name: 'iShares Core Equity ETF', holding: true },
+  { symbol: 'VFV.TO', displaySymbol: 'VFV', name: 'Vanguard S&P 500 ETF', holding: true },
+  { symbol: 'VXC.TO', displaySymbol: 'VXC', name: 'Vanguard FTSE Global ex Canada ETF', holding: true },
+  { symbol: 'FINN.NE', displaySymbol: 'FINN', name: 'Fidelity Global Innovators ETF', holding: true },
+  { symbol: 'MSHE.TO', displaySymbol: 'MSHE', name: 'Harvest Microsoft Enhanced High Income ETF', holding: true },
+  { symbol: 'VEQT.TO', displaySymbol: 'VEQT', name: 'Vanguard All-Equity ETF', holding: false },
+  { symbol: 'XAW.TO', displaySymbol: 'XAW', name: 'iShares Core MSCI All Country ex Canada ETF', holding: false },
+  { symbol: 'HMAX.TO', displaySymbol: 'HMAX', name: 'Hamilton Enhanced Multi-Sector Covered Call ETF', holding: false },
 ]
 
-// Détermine l'état du marché nord-américain (TSX / NYSE : 9 h 30–16 h ET, lun-ven)
 export function computeMarketState(): string {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    hour: '2-digit',
-    minute: '2-digit',
-    weekday: 'short',
-    hour12: false,
-  }).formatToParts(new Date())
-
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', weekday: 'short', hour12: false }).formatToParts(new Date())
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? ''
   const weekday = get('weekday')
   const hour = parseInt(get('hour'), 10)
   const minute = parseInt(get('minute'), 10)
   const minutes = hour * 60 + minute
-
   if (weekday === 'Sat' || weekday === 'Sun') return 'CLOSED'
   const open = 9 * 60 + 30
   const close = 16 * 60
@@ -86,123 +81,50 @@ export function computeMarketState(): string {
 interface YahooChart {
   chart: {
     result?: Array<{
-      meta: {
-        symbol: string
-        currency?: string
-        regularMarketPrice?: number
-        chartPreviousClose?: number
-        previousClose?: number
-        regularMarketDayHigh?: number
-        regularMarketDayLow?: number
-        marketState?: string
-        longName?: string
-        shortName?: string
-      }
+      meta: { symbol: string; currency?: string; regularMarketPrice?: number; chartPreviousClose?: number; previousClose?: number; regularMarketDayHigh?: number; regularMarketDayLow?: number; marketState?: string; longName?: string; shortName?: string }
       timestamp?: number[]
-      indicators: {
-        quote?: Array<{ close?: (number | null)[] }>
-        adjclose?: Array<{ adjclose?: (number | null)[] }>
-      }
+      indicators: { quote?: Array<{ close?: (number | null)[] }>; adjclose?: Array<{ adjclose?: (number | null)[] }> }
     }>
     error?: unknown
   }
 }
 
 async function fetchChart(symbol: string): Promise<YahooChart | null> {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
-    symbol,
-  )}?range=1y&interval=1d&includePrePost=false`
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=1y&interval=1d&includePrePost=false`
   try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        Accept: 'application/json',
-      },
-      cache: 'no-store',
-    })
+    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json' }, cache: 'no-store' })
     if (!res.ok) return null
     return (await res.json()) as YahooChart
-  } catch {
-    return null
-  }
+  } catch { return null }
 }
 
-export async function getQuote(
-  symbol: string,
-  name: string,
-  kind: 'index' | 'stock' | 'etf',
-): Promise<Quote> {
-  const base: Quote = {
-    symbol,
-    name,
-    kind,
-    currency: kind === 'index' ? '' : 'CAD',
-    price: null,
-    previousClose: null,
-    change: null,
-    changePercent: null,
-    dayHigh: null,
-    dayLow: null,
-    marketState: 'UNKNOWN',
-    spark: [],
-    analysis: null,
-  }
-
+export async function getQuote(symbol: string, name: string, kind: 'index' | 'stock' | 'etf', displaySymbol?: string, holding = false): Promise<Quote> {
+  const base: Quote = { symbol: displaySymbol ?? symbol, name, kind, currency: kind === 'index' ? '' : 'CAD', price: null, previousClose: null, change: null, changePercent: null, dayHigh: null, dayLow: null, marketState: 'UNKNOWN', spark: [], analysis: null, favorite: kind !== 'index', holding }
   const data = await fetchChart(symbol)
   const result = data?.chart?.result?.[0]
   if (!result) return { ...base, error: 'Données indisponibles' }
-
   const meta = result.meta
   const timestamps = result.timestamp ?? []
-  const rawCloses =
-    result.indicators.quote?.[0]?.close ??
-    result.indicators.adjclose?.[0]?.adjclose ??
-    []
-
+  const rawCloses = result.indicators.quote?.[0]?.close ?? result.indicators.adjclose?.[0]?.adjclose ?? []
   const series: SparkPoint[] = []
   for (let i = 0; i < timestamps.length; i++) {
     const c = rawCloses[i]
     if (c != null && !isNaN(c)) series.push({ t: timestamps[i], c })
   }
-
   const closes = series.map((p) => p.c)
-  const price =
-    meta.regularMarketPrice ?? (closes.length ? closes[closes.length - 1] : null)
-  const previousClose: number | null =
-    closes.length >= 2
-      ? closes[closes.length - 2]
-      : (meta.previousClose ?? meta.chartPreviousClose ?? null)
+  const price = meta.regularMarketPrice ?? (closes.length ? closes[closes.length - 1] : null)
+  const previousClose = closes.length >= 2 ? closes[closes.length - 2] : (meta.previousClose ?? meta.chartPreviousClose ?? null)
   const change = price != null && previousClose != null ? price - previousClose : null
-  const changePercent =
-    change != null && previousClose ? (change / previousClose) * 100 : null
+  const changePercent = change != null && previousClose ? (change / previousClose) * 100 : null
   const analysis = closes.length >= 30 ? analyze(closes) : null
-
-  return {
-    ...base,
-    currency: meta.currency ?? base.currency,
-    price,
-    previousClose,
-    change,
-    changePercent,
-    dayHigh: meta.regularMarketDayHigh ?? null,
-    dayLow: meta.regularMarketDayLow ?? null,
-    marketState: meta.marketState ?? computeMarketState(),
-    spark: series.slice(-90),
-    analysis,
-  }
+  return { ...base, currency: meta.currency ?? base.currency, price, previousClose, change, changePercent, dayHigh: meta.regularMarketDayHigh ?? null, dayLow: meta.regularMarketDayLow ?? null, marketState: meta.marketState ?? computeMarketState(), spark: series.slice(-90), analysis }
 }
 
-export async function getAllQuotes(): Promise<{
-  indices: Quote[]
-  stocks: Quote[]
-  etfs: Quote[]
-  updatedAt: number
-}> {
+export async function getAllQuotes(): Promise<{ indices: Quote[]; stocks: Quote[]; etfs: Quote[]; updatedAt: number }> {
   const [indices, stocks, etfs] = await Promise.all([
     Promise.all(INDICES.map((i) => getQuote(i.symbol, i.name, 'index'))),
-    Promise.all(STOCKS.map((s) => getQuote(s.symbol, s.name, 'stock'))),
-    Promise.all(ETFS.map((e) => getQuote(e.symbol, e.name, 'etf'))),
+    Promise.all(STOCKS.map((s) => getQuote(s.symbol, s.name, 'stock', s.displaySymbol, s.holding))),
+    Promise.all(ETFS.map((e) => getQuote(e.symbol, e.name, 'etf', e.displaySymbol, e.holding))),
   ])
   return { indices, stocks, etfs, updatedAt: Date.now() }
 }
