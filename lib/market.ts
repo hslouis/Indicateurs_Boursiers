@@ -27,39 +27,50 @@ export const INDICES = [
   { symbol: '^GSPTSE', name: 'S&P/TSX Composite' },
 ]
 
-// Actions favorites : portefeuille actuel + titres suivis pour les occasions d'achat.
-// Les CDR canadiens qui ont une cotation TSX sont suivis en .TO afin d'analyser le prix CAD.
+// Ordre = intérêt d'investissement personnel, du plus important au plus spéculatif.
+// Ce classement est indépendant du score technique du jour.
 export const STOCKS = [
+  // Niveau 1 — convictions / candidats prioritaires
   { symbol: 'MSFT.TO', displaySymbol: 'MSFT', name: 'Microsoft CDR', holding: true },
+  { symbol: 'MA.TO', displaySymbol: 'MA', name: 'Mastercard CDR', holding: true },
+  { symbol: 'CSU.TO', displaySymbol: 'CSU', name: 'Constellation Software', holding: false },
+  { symbol: 'DSG.TO', displaySymbol: 'DSG', name: 'Descartes Systems Group', holding: false },
   { symbol: 'AAPL.TO', displaySymbol: 'AAPL', name: 'Apple CDR', holding: true },
   { symbol: 'AMZN.TO', displaySymbol: 'AMZN', name: 'Amazon CDR', holding: true },
   { symbol: 'GOOG.TO', displaySymbol: 'GOOG', name: 'Alphabet CDR', holding: true },
-  { symbol: 'MA.TO', displaySymbol: 'MA', name: 'Mastercard CDR', holding: true },
   { symbol: 'META', displaySymbol: 'META', name: 'Meta Platforms', holding: true },
-  { symbol: 'SBUX.TO', displaySymbol: 'SBUX', name: 'Starbucks CDR', holding: true },
-  { symbol: 'SPGI.TO', displaySymbol: 'SPGI', name: 'S&P Global CDR', holding: true },
+
+  // Niveau 2 — bonnes convictions, intérêt secondaire
   { symbol: 'TD.TO', displaySymbol: 'TD', name: 'TD', holding: true },
+  { symbol: 'BN.TO', displaySymbol: 'BN', name: 'Brookfield', holding: true },
+  { symbol: 'SPGI.TO', displaySymbol: 'SPGI', name: 'S&P Global CDR', holding: true },
+  { symbol: 'SBUX.TO', displaySymbol: 'SBUX', name: 'Starbucks CDR', holding: true },
   { symbol: 'BNS.TO', displaySymbol: 'BNS', name: 'Banque Scotia', holding: true },
   { symbol: 'CM.TO', displaySymbol: 'CM', name: 'CIBC', holding: true },
-  { symbol: 'BN.TO', displaySymbol: 'BN', name: 'Brookfield', holding: true },
-  { symbol: 'MDA.TO', displaySymbol: 'MDA', name: 'MDA Space', holding: false },
-  { symbol: 'NOWS.TO', displaySymbol: 'NOWS', name: 'NOWS', holding: false },
+
+  // Niveau 3 — candidats conditionnels : surtout intéressants sur repli marqué
   { symbol: 'SHOP.TO', displaySymbol: 'SHOP', name: 'Shopify', holding: false },
-  { symbol: 'DSG.TO', displaySymbol: 'DSG', name: 'Descartes Systems Group', holding: false },
-  { symbol: 'CSU.TO', displaySymbol: 'CSU', name: 'Constellation Software', holding: false },
+  { symbol: 'MDA.TO', displaySymbol: 'MDA', name: 'MDA Space', holding: false },
+
+  // Niveau 4 — surveillance / positions plus spéculatives
   { symbol: 'NVDA.TO', displaySymbol: 'NVDA', name: 'NVIDIA CDR', holding: false },
   { symbol: 'ASML', displaySymbol: 'ASML', name: 'ASML', holding: false },
+  { symbol: 'NOWS.TO', displaySymbol: 'NOWS', name: 'NOWS', holding: false },
 ]
 
+// Même logique : ordre = intérêt personnel, et non rendement ou score technique.
 export const ETFS = [
+  // Cœur de portefeuille
   { symbol: 'XEQT.TO', displaySymbol: 'XEQT', name: 'iShares Core Equity ETF', holding: true },
   { symbol: 'VFV.TO', displaySymbol: 'VFV', name: 'Vanguard S&P 500 ETF', holding: true },
   { symbol: 'VXC.TO', displaySymbol: 'VXC', name: 'Vanguard FTSE Global ex Canada ETF', holding: true },
-  { symbol: 'FINN.NE', displaySymbol: 'FINN', name: 'Fidelity Global Innovators ETF', holding: true },
-  { symbol: 'MSHE.TO', displaySymbol: 'MSHE', name: 'Harvest Microsoft Enhanced High Income ETF', holding: true },
   { symbol: 'VEQT.TO', displaySymbol: 'VEQT', name: 'Vanguard All-Equity ETF', holding: false },
   { symbol: 'XAW.TO', displaySymbol: 'XAW', name: 'iShares Core MSCI All Country ex Canada ETF', holding: false },
+
+  // Produits plus spécialisés / à surveiller
+  { symbol: 'MSHE.TO', displaySymbol: 'MSHE', name: 'Harvest Microsoft Enhanced High Income ETF', holding: true },
   { symbol: 'HMAX.TO', displaySymbol: 'HMAX', name: 'Hamilton Enhanced Multi-Sector Covered Call ETF', holding: false },
+  { symbol: 'FINN.NE', displaySymbol: 'FINN', name: 'Fidelity Global Innovators ETF', holding: true },
 ]
 
 export function computeMarketState(): string {
