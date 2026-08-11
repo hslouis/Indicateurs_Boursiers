@@ -8,7 +8,7 @@ export interface SparkPoint {
 export interface Quote {
   symbol: string
   name: string
-  kind: 'index' | 'stock'
+  kind: 'index' | 'stock' | 'etf'
   currency: string
   price: number | null
   previousClose: number | null
@@ -22,21 +22,43 @@ export interface Quote {
   error?: string
 }
 
-// Univers surveillé
+// Indices de référence
 export const INDICES: { symbol: string; name: string }[] = [
   { symbol: '^GSPC', name: 'S&P 500' },
   { symbol: '^NDX', name: 'Nasdaq-100' },
   { symbol: '^GSPTSE', name: 'S&P/TSX Composite' },
 ]
 
+// Actions favorites : portefeuille actuel + titres déjà suivis pour les occasions d'achat.
+// Les CDR canadiens sont suivis via leur cotation TSX (.TO) afin d'avoir les prix en CAD.
 export const STOCKS: { symbol: string; name: string }[] = [
-  { symbol: 'MDA.TO', name: 'MDA Space Ltd.' },
-  { symbol: 'NOWS.TO', name: 'Nuvei / NOWS' },
-  { symbol: 'SHOP.TO', name: 'Shopify Inc.' },
+  { symbol: 'MSFT.TO', name: 'Microsoft CDR (CAD Hedged)' },
+  { symbol: 'AAPL.TO', name: 'Apple CDR (CAD Hedged)' },
+  { symbol: 'AMZN.TO', name: 'Amazon CDR (CAD Hedged)' },
+  { symbol: 'GOOG.TO', name: 'Alphabet CDR (CAD Hedged)' },
+  { symbol: 'MA.TO', name: 'Mastercard CDR (CAD Hedged)' },
+  { symbol: 'SBUX.TO', name: 'Starbucks CDR (CAD Hedged)' },
+  { symbol: 'SPGI.TO', name: 'S&P Global CDR (CAD Hedged)' },
+  { symbol: 'META', name: 'Meta Platforms' },
+  { symbol: 'TD.TO', name: 'TD Bank' },
+  { symbol: 'BNS.TO', name: 'Bank of Nova Scotia' },
+  { symbol: 'CM.TO', name: 'CIBC' },
+  { symbol: 'BN.TO', name: 'Brookfield' },
+  { symbol: 'MDA.TO', name: 'MDA Space' },
+  { symbol: 'NOWS.TO', name: 'NOWS' },
+  { symbol: 'SHOP.TO', name: 'Shopify' },
+]
+
+// FNB détenus / suivis dans le portefeuille.
+export const ETFS: { symbol: string; name: string }[] = [
+  { symbol: 'XEQT.TO', name: 'XEQT — iShares Core Equity ETF Portfolio' },
+  { symbol: 'VFV.TO', name: 'VFV — Vanguard S&P 500 Index ETF' },
+  { symbol: 'VXC.TO', name: 'VXC — Vanguard FTSE Global All Cap ex Canada' },
+  { symbol: 'FINN.TO', name: 'FINN — Fidelity Global Innovators ETF' },
+  { symbol: 'MSHE.TO', name: 'MSHE — Harvest Microsoft Enhanced High Income' },
 ]
 
 // Détermine l'état du marché nord-américain (TSX / NYSE : 9 h 30–16 h ET, lun-ven)
-// à partir de l'heure de New York, car le point /chart de Yahoo n'expose pas marketState.
 export function computeMarketState(): string {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: 'America/New_York',
@@ -87,7 +109,6 @@ interface YahooChart {
 }
 
 async function fetchChart(symbol: string): Promise<YahooChart | null> {
-  // 1 an de séances quotidiennes : nécessaire pour calculer la MM200.
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
     symbol,
   )}?range=1y&interval=1d&includePrePost=false`
@@ -110,7 +131,7 @@ async function fetchChart(symbol: string): Promise<YahooChart | null> {
 export async function getQuote(
   symbol: string,
   name: string,
-  kind: 'index' | 'stock',
+  kind: 'index' | 'stock' | 'etf',
 ): Promise<Quote> {
   const base: Quote = {
     symbol,
@@ -130,9 +151,7 @@ export async function getQuote(
 
   const data = await fetchChart(symbol)
   const result = data?.chart?.result?.[0]
-  if (!result) {
-    return { ...base, error: 'Données indisponibles' }
-  }
+  if (!result) return { ...base, error: 'Données indisponibles' }
 
   const meta = result.meta
   const timestamps = result.timestamp ?? []
@@ -141,7 +160,6 @@ export async function getQuote(
     result.indicators.adjclose?.[0]?.adjclose ??
     []
 
-  // Construire une série propre (sans trous)
   const series: SparkPoint[] = []
   for (let i = 0; i < timestamps.length; i++) {
     const c = rawCloses[i]
@@ -151,18 +169,13 @@ export async function getQuote(
   const closes = series.map((p) => p.c)
   const price =
     meta.regularMarketPrice ?? (closes.length ? closes[closes.length - 1] : null)
-
-  // Variation du jour : la dernière barre quotidienne représente la séance courante
-  // (son prix = `price`), donc la clôture de référence est l'avant-dernière barre.
   const previousClose: number | null =
     closes.length >= 2
       ? closes[closes.length - 2]
       : (meta.previousClose ?? meta.chartPreviousClose ?? null)
-
   const change = price != null && previousClose != null ? price - previousClose : null
   const changePercent =
     change != null && previousClose ? (change / previousClose) * 100 : null
-
   const analysis = closes.length >= 30 ? analyze(closes) : null
 
   return {
@@ -183,11 +196,13 @@ export async function getQuote(
 export async function getAllQuotes(): Promise<{
   indices: Quote[]
   stocks: Quote[]
+  etfs: Quote[]
   updatedAt: number
 }> {
-  const [indices, stocks] = await Promise.all([
+  const [indices, stocks, etfs] = await Promise.all([
     Promise.all(INDICES.map((i) => getQuote(i.symbol, i.name, 'index'))),
     Promise.all(STOCKS.map((s) => getQuote(s.symbol, s.name, 'stock'))),
+    Promise.all(ETFS.map((e) => getQuote(e.symbol, e.name, 'etf'))),
   ])
-  return { indices, stocks, updatedAt: Date.now() }
+  return { indices, stocks, etfs, updatedAt: Date.now() }
 }
