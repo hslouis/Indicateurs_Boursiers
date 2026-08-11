@@ -27,6 +27,9 @@
   --color-neutral: oklch(0.8 0.14 85);
   --color-neutral-foreground: oklch(0.16 0.012 250);
 
+  --color-warn: oklch(0.74 0.16 55);
+  --color-warn-foreground: oklch(0.16 0.012 250);
+
   --radius: 0.5rem;
 }
 

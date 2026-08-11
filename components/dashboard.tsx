@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { Quote } from '@/lib/market'
 import { IndexStrip } from './index-strip'
 import { StockCard } from './stock-card'
+import { Opportunities } from './opportunities'
 import { fmtTime, marketStateLabel } from '@/lib/format'
 import { RefreshCw, Activity } from 'lucide-react'
 
@@ -16,7 +17,9 @@ interface Payload {
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-const REFRESH_MS = 30_000
+// Rafraîchissement quasi temps réel pendant la séance, ralenti hors marché.
+const REFRESH_OPEN_MS = 15_000
+const REFRESH_CLOSED_MS = 60_000
 
 export function Dashboard() {
   const [manualLoading, setManualLoading] = useState(false)
@@ -24,7 +27,13 @@ export function Dashboard() {
     '/api/stocks',
     fetcher,
     {
-      refreshInterval: REFRESH_MS,
+      refreshInterval: (latest) => {
+        const st = [
+          ...(latest?.stocks ?? []),
+          ...(latest?.indices ?? []),
+        ].find((s) => s.marketState && s.marketState !== 'UNKNOWN')?.marketState
+        return st === 'REGULAR' ? REFRESH_OPEN_MS : REFRESH_CLOSED_MS
+      },
       revalidateOnFocus: true,
       keepPreviousData: true,
     },
@@ -34,6 +43,7 @@ export function Dashboard() {
     (s) => s.marketState && s.marketState !== 'UNKNOWN',
   )?.marketState
   const isOpen = marketState === 'REGULAR'
+  const refreshSec = (isOpen ? REFRESH_OPEN_MS : REFRESH_CLOSED_MS) / 1000
 
   async function handleRefresh() {
     setManualLoading(true)
@@ -99,14 +109,20 @@ export function Dashboard() {
               <IndexStrip indices={data.indices} />
             </section>
 
-            <section className="mt-8">
-              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Titres surveillés
-              </h2>
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                {data.stocks.map((q) => (
-                  <StockCard key={q.symbol} q={q} />
-                ))}
+            <section className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+              <div>
+                <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Titres surveillés
+                </h2>
+                <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                  {data.stocks.map((q) => (
+                    <StockCard key={q.symbol} q={q} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="lg:sticky lg:top-6 lg:self-start">
+                <Opportunities quotes={[...data.stocks, ...data.indices]} />
               </div>
             </section>
 
@@ -114,31 +130,37 @@ export function Dashboard() {
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 Comment lire les signaux
               </h3>
-              <div className="mt-3 grid grid-cols-1 gap-x-8 gap-y-2 text-xs text-muted-foreground sm:grid-cols-2">
+              <div className="mt-3 grid grid-cols-1 gap-x-8 gap-y-2 text-xs text-muted-foreground sm:grid-cols-2 lg:grid-cols-3">
                 <p>
-                  <span className="font-semibold text-bull">Achat / Achat fort</span> —
-                  RSI bas, tendance haussière (prix &gt; MM20 &gt; MM50) et MACD
-                  positif convergent vers une opportunité d&apos;entrée.
+                  <span className="font-semibold text-bull">🟢 Achat fort / Achat</span>{' '}
+                  — score ≥ 60 : tendance, RSI, MACD et momentum convergent vers
+                  une entrée.
                 </p>
                 <p>
-                  <span className="font-semibold text-bear">Vente / Vente forte</span> —
-                  RSI en surachat, tendance baissière et MACD négatif suggèrent
-                  d&apos;alléger ou de sortir.
+                  <span className="font-semibold text-neutral">🟡 Surveiller</span> —
+                  score 45-59 : configuration en amélioration, à confirmer.
                 </p>
                 <p>
-                  <span className="font-semibold text-neutral">Conserver</span> —
-                  signaux mitigés, aucune action franche recommandée.
+                  <span className="font-semibold text-warn">🟠 Attendre</span> —
+                  score 30-44 : signaux mitigés, pas d&apos;entrée franche.
                 </p>
-                <p className="text-muted-foreground/80">
-                  Données différées fournies par Yahoo Finance. À titre informatif
-                  uniquement — ceci ne constitue pas un conseil financier.
+                <p>
+                  <span className="font-semibold text-bear">🔴 Vente</span> — score
+                  &lt; 30 : tendance baissière et momentum négatif dominants.
+                </p>
+                <p className="sm:col-span-2 lg:col-span-2 text-muted-foreground/80">
+                  Le score technique (0-100) pondère tendance (35 %), MACD (25 %),
+                  momentum (20 %) et RSI (20 %). Données différées fournies par
+                  Yahoo Finance. À titre purement informatif — ceci n&apos;est
+                  pas un conseil financier ni une garantie de performance.
                 </p>
               </div>
             </section>
 
-            <footer className="mt-8 flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
+            <footer className="mt-8 flex flex-col gap-1 border-t border-border pt-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
               <span>
-                Actualisation automatique toutes les {REFRESH_MS / 1000}s
+                Actualisation automatique toutes les {refreshSec}s
+                {isOpen ? ' (séance en cours)' : ' (hors séance)'}
               </span>
               <span className="font-mono">
                 Mis à jour à {fmtTime(data.updatedAt)}

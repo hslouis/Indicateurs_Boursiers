@@ -18,6 +18,17 @@ export function fmtChange(v: number | null): string {
   return `${sign}${v.toFixed(2)}`
 }
 
+export function fmtSignedPct(v: number | null, digits = 1): string {
+  if (v == null || isNaN(v)) return '—'
+  const sign = v > 0 ? '+' : ''
+  return `${sign}${v.toFixed(digits)} %`
+}
+
+export function fmtPlainPct(v: number | null, digits = 0): string {
+  if (v == null || isNaN(v)) return '—'
+  return `${v.toFixed(digits)} %`
+}
+
 export function fmtTime(ms: number): string {
   return new Date(ms).toLocaleTimeString('fr-CA', {
     hour: '2-digit',

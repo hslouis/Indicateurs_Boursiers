@@ -24,9 +24,9 @@ export interface Quote {
 
 // Univers surveillé
 export const INDICES: { symbol: string; name: string }[] = [
-  { symbol: '^GSPTSE', name: 'S&P/TSX Composite' },
   { symbol: '^GSPC', name: 'S&P 500' },
-  { symbol: '^IXIC', name: 'Nasdaq Composite' },
+  { symbol: '^NDX', name: 'Nasdaq-100' },
+  { symbol: '^GSPTSE', name: 'S&P/TSX Composite' },
 ]
 
 export const STOCKS: { symbol: string; name: string }[] = [
@@ -87,9 +87,10 @@ interface YahooChart {
 }
 
 async function fetchChart(symbol: string): Promise<YahooChart | null> {
+  // 1 an de séances quotidiennes : nécessaire pour calculer la MM200.
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(
     symbol,
-  )}?range=6mo&interval=1d&includePrePost=false`
+  )}?range=1y&interval=1d&includePrePost=false`
   try {
     const res = await fetch(url, {
       headers: {
