@@ -12,34 +12,36 @@ import { RefreshCw, Activity } from 'lucide-react'
 interface Payload {
   indices: Quote[]
   stocks: Quote[]
+  etfs: Quote[]
   updatedAt: number
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-// Rafraîchissement quasi temps réel pendant la séance, ralenti hors marché.
 const REFRESH_OPEN_MS = 15_000
 const REFRESH_CLOSED_MS = 60_000
 
 export function Dashboard() {
   const [manualLoading, setManualLoading] = useState(false)
-  const { data, error, isLoading, mutate } = useSWR<Payload>(
-    '/api/stocks',
-    fetcher,
-    {
-      refreshInterval: (latest) => {
-        const st = [
-          ...(latest?.stocks ?? []),
-          ...(latest?.indices ?? []),
-        ].find((s) => s.marketState && s.marketState !== 'UNKNOWN')?.marketState
-        return st === 'REGULAR' ? REFRESH_OPEN_MS : REFRESH_CLOSED_MS
-      },
-      revalidateOnFocus: true,
-      keepPreviousData: true,
+  const { data, error, isLoading, mutate } = useSWR<Payload>('/api/stocks', fetcher, {
+    refreshInterval: (latest) => {
+      const st = [
+        ...(latest?.stocks ?? []),
+        ...(latest?.etfs ?? []),
+        ...(latest?.indices ?? []),
+      ].find((s) => s.marketState && s.marketState !== 'UNKNOWN')?.marketState
+      return st === 'REGULAR' ? REFRESH_OPEN_MS : REFRESH_CLOSED_MS
     },
-  )
+    revalidateOnFocus: true,
+    keepPreviousData: true,
+  })
 
-  const marketState = [...(data?.stocks ?? []), ...(data?.indices ?? [])].find(
+  const allAssets = [
+    ...(data?.stocks ?? []),
+    ...(data?.etfs ?? []),
+    ...(data?.indices ?? []),
+  ]
+  const marketState = allAssets.find(
     (s) => s.marketState && s.marketState !== 'UNKNOWN',
   )?.marketState
   const isOpen = marketState === 'REGULAR'
@@ -52,7 +54,7 @@ export function Dashboard() {
   }
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-6xl px-4 py-6 sm:px-6 lg:py-10">
+    <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-10">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
@@ -62,7 +64,7 @@ export function Dashboard() {
             </h1>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Surveillance en temps réel · signaux techniques d&apos;achat et de vente
+            Actions favorites · FNB · indices · signaux techniques d&apos;achat et de vente
           </p>
         </div>
 
@@ -82,9 +84,7 @@ export function Dashboard() {
             disabled={manualLoading}
             className="flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
           >
-            <RefreshCw
-              className={`h-3.5 w-3.5 ${manualLoading ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`h-3.5 w-3.5 ${manualLoading ? 'animate-spin' : ''}`} />
             Actualiser
           </button>
         </div>
@@ -92,8 +92,7 @@ export function Dashboard() {
 
       {error && (
         <div className="mt-6 rounded-lg border border-bear/40 bg-bear/10 px-4 py-3 text-sm text-bear">
-          Impossible de charger les données de marché. Nouvelle tentative
-          automatique en cours…
+          Impossible de charger les données de marché. Nouvelle tentative automatique en cours…
         </div>
       )}
 
@@ -109,21 +108,30 @@ export function Dashboard() {
               <IndexStrip indices={data.indices} />
             </section>
 
-            <section className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
-              <div>
-                <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  Titres surveillés
-                </h2>
-                <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                  {data.stocks.map((q) => (
-                    <StockCard key={q.symbol} q={q} />
-                  ))}
-                </div>
+            <section className="mt-8">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                ⭐ Actions favorites
+              </h2>
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                {data.stocks.map((q) => (
+                  <StockCard key={q.symbol} q={q} />
+                ))}
               </div>
+            </section>
 
-              <div className="lg:sticky lg:top-6 lg:self-start">
-                <Opportunities quotes={[...data.stocks, ...data.indices]} />
+            <section className="mt-10">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                📊 FNB
+              </h2>
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                {data.etfs.map((q) => (
+                  <StockCard key={q.symbol} q={q} />
+                ))}
               </div>
+            </section>
+
+            <section className="mt-10 lg:sticky lg:top-6 lg:z-10">
+              <Opportunities quotes={[...data.stocks, ...data.etfs, ...data.indices]} />
             </section>
 
             <section className="mt-8 rounded-lg border bg-card p-4">
@@ -132,27 +140,25 @@ export function Dashboard() {
               </h3>
               <div className="mt-3 grid grid-cols-1 gap-x-8 gap-y-2 text-xs text-muted-foreground sm:grid-cols-2 lg:grid-cols-3">
                 <p>
-                  <span className="font-semibold text-bull">🟢 Achat fort / Achat</span>{' '}
-                  — score ≥ 60 : tendance, RSI, MACD et momentum convergent vers
-                  une entrée.
+                  <span className="font-semibold text-bull">🟢 Achat fort / Achat</span> — score ≥ 60 :
+                  tendance, RSI, MACD et momentum convergent vers une entrée.
                 </p>
                 <p>
-                  <span className="font-semibold text-neutral">🟡 Surveiller</span> —
-                  score 45-59 : configuration en amélioration, à confirmer.
+                  <span className="font-semibold text-neutral">🟡 Surveiller</span> — score 45-59 :
+                  configuration en amélioration, à confirmer.
                 </p>
                 <p>
-                  <span className="font-semibold text-warn">🟠 Attendre</span> —
-                  score 30-44 : signaux mitigés, pas d&apos;entrée franche.
+                  <span className="font-semibold text-warn">🟠 Attendre</span> — score 30-44 : signaux
+                  mitigés, pas d&apos;entrée franche.
                 </p>
                 <p>
-                  <span className="font-semibold text-bear">🔴 Vente</span> — score
-                  &lt; 30 : tendance baissière et momentum négatif dominants.
+                  <span className="font-semibold text-bear">🔴 Vente</span> — score &lt; 30 : tendance
+                  baissière et momentum négatif dominants.
                 </p>
                 <p className="sm:col-span-2 lg:col-span-2 text-muted-foreground/80">
-                  Le score technique (0-100) pondère tendance (35 %), MACD (25 %),
-                  momentum (20 %) et RSI (20 %). Données différées fournies par
-                  Yahoo Finance. À titre purement informatif — ceci n&apos;est
-                  pas un conseil financier ni une garantie de performance.
+                  Le score technique (0-100) pondère tendance (35 %), MACD (25 %), momentum (20 %) et
+                  RSI (20 %). Données de marché provenant de Yahoo Finance. À titre purement informatif —
+                  ceci n&apos;est pas un conseil financier ni une garantie de performance.
                 </p>
               </div>
             </section>
@@ -162,9 +168,7 @@ export function Dashboard() {
                 Actualisation automatique toutes les {refreshSec}s
                 {isOpen ? ' (séance en cours)' : ' (hors séance)'}
               </span>
-              <span className="font-mono">
-                Mis à jour à {fmtTime(data.updatedAt)}
-              </span>
+              <span className="font-mono">Mis à jour à {fmtTime(data.updatedAt)}</span>
             </footer>
           </>
         )
@@ -181,8 +185,8 @@ function SkeletonState() {
           <div key={i} className="h-24 animate-pulse rounded-lg border bg-card" />
         ))}
       </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {[0, 1, 2].map((i) => (
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {[0, 1, 2, 3].map((i) => (
           <div key={i} className="h-72 animate-pulse rounded-xl border bg-card" />
         ))}
       </div>
