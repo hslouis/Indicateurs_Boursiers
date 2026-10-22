@@ -36,6 +36,9 @@ export const STOCKS = [
   { symbol: 'CSU.TO', displaySymbol: 'CSU', name: 'Constellation Software', holding: false },
   { symbol: 'DSG.TO', displaySymbol: 'DSG', name: 'Descartes Systems Group', holding: false },
   { symbol: 'AAPL.TO', displaySymbol: 'AAPL', name: 'Apple CDR', holding: true },
+  { symbol: 'ABT.TO', displaySymbol: 'ABT', name: 'Abbott Laboratories CDR', holding: true },
+  { symbol: 'ENB.TO', displaySymbol: 'ENB', name: 'Enbridge', holding: true },
+  { symbol: 'WMT.TO', displaySymbol: 'WMT', name: 'Walmart CDR', holding: true },
   { symbol: 'AMZN.TO', displaySymbol: 'AMZN', name: 'Amazon CDR', holding: true },
   { symbol: 'GOOG.TO', displaySymbol: 'GOOG', name: 'Alphabet CDR', holding: true },
   { symbol: 'META', displaySymbol: 'META', name: 'Meta Platforms', holding: true },
@@ -44,16 +47,17 @@ export const STOCKS = [
   { symbol: 'TD.TO', displaySymbol: 'TD', name: 'TD', holding: true },
   { symbol: 'BN.TO', displaySymbol: 'BN', name: 'Brookfield', holding: true },
   { symbol: 'SPGI.TO', displaySymbol: 'SPGI', name: 'S&P Global CDR', holding: true },
-  { symbol: 'SBUX.TO', displaySymbol: 'SBUX', name: 'Starbucks CDR', holding: true },
+  { symbol: 'SBUX.TO', displaySymbol: 'SBUX', name: 'Starbucks CDR', holding: false },
   { symbol: 'BNS.TO', displaySymbol: 'BNS', name: 'Banque Scotia', holding: true },
   { symbol: 'CM.TO', displaySymbol: 'CM', name: 'CIBC', holding: true },
 
   // Niveau 3 — candidats conditionnels : surtout intéressants sur repli marqué
+  { symbol: 'AMD', displaySymbol: 'AMD', name: 'Advanced Micro Devices', holding: false },
   { symbol: 'SHOP.TO', displaySymbol: 'SHOP', name: 'Shopify', holding: false },
-  { symbol: 'MDA.TO', displaySymbol: 'MDA', name: 'MDA Space', holding: false },
+  { symbol: 'MDA.TO', displaySymbol: 'MDA', name: 'MDA Space', holding: true },
+  { symbol: 'NVDA.TO', displaySymbol: 'NVDA', name: 'NVIDIA CDR', holding: true },
 
   // Niveau 4 — surveillance / positions plus spéculatives
-  { symbol: 'NVDA.TO', displaySymbol: 'NVDA', name: 'NVIDIA CDR', holding: false },
   { symbol: 'ASML', displaySymbol: 'ASML', name: 'ASML', holding: false },
   { symbol: 'NOWS.TO', displaySymbol: 'NOWS', name: 'NOWS', holding: false },
 ]
@@ -68,7 +72,7 @@ export const ETFS = [
   { symbol: 'XAW.TO', displaySymbol: 'XAW', name: 'iShares Core MSCI All Country ex Canada ETF', holding: false },
 
   // Produits plus spécialisés / à surveiller
-  { symbol: 'MSHE.TO', displaySymbol: 'MSHE', name: 'Harvest Microsoft Enhanced High Income ETF', holding: true },
+  { symbol: 'MSHE.TO', displaySymbol: 'MSHE', name: 'Harvest Microsoft Enhanced High Income ETF', holding: false },
   { symbol: 'HMAX.TO', displaySymbol: 'HMAX', name: 'Hamilton Enhanced Multi-Sector Covered Call ETF', holding: false },
   { symbol: 'FINN.NE', displaySymbol: 'FINN', name: 'Fidelity Global Innovators ETF', holding: true },
 ]
