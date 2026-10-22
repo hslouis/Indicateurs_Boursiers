@@ -47,7 +47,6 @@ export const STOCKS = [
   { symbol: 'TD.TO', displaySymbol: 'TD', name: 'TD', holding: true },
   { symbol: 'BN.TO', displaySymbol: 'BN', name: 'Brookfield', holding: true },
   { symbol: 'SPGI.TO', displaySymbol: 'SPGI', name: 'S&P Global CDR', holding: true },
-  { symbol: 'SBUX.TO', displaySymbol: 'SBUX', name: 'Starbucks CDR', holding: false },
   { symbol: 'BNS.TO', displaySymbol: 'BNS', name: 'Banque Scotia', holding: true },
   { symbol: 'CM.TO', displaySymbol: 'CM', name: 'CIBC', holding: true },
 
